@@ -1,11 +1,11 @@
 [dev]
-  command = "npm run vite:start"
+  command = "npm run dev"
   publish = "dist"
   # We need another port for the application because Vite occupies the 3000.
   port = 8080
 
 [build]
-  command = "npm run vite:build"
+  command = "npm run build"
   publish = "dist"
 
 [functions]
