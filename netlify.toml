@@ -1,6 +1,33 @@
 [build]
-  command = "npm run build"
-  publish = "dist"
+  command = "npm run build"  # Adjust to your build command
+  publish = "dist"  # Adjust to your build output directory
 
-[dev]
-  command = "npm run dev"
+[context.production.environment]
+  NODE_VERSION = "14"  # Set the Node.js version for production
+
+[context.split1]
+  command = "npm run build"  # Custom command for a specific context
+  publish = "dist"  # Custom publish directory for a specific context
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build.environment]
+  # Add any environment variables needed for your build process
+
+[context.branch-deploy]
+  command = "npm run build"  # Adjust to your build command for branch deploys
+  publish = "dist"  # Adjust to your build output directory for branch deploys
+
+[context.deploy-preview]
+  command = "npm run build"  # Adjust to your build command for deploy previews
+  publish = "dist"  # Adjust to your build output directory for deploy previews
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://api.example.com/:splat"
+  status = 200
+
+# Add more configurations as needed
