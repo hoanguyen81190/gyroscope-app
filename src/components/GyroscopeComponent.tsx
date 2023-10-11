@@ -15,7 +15,7 @@ const GyroscopeComponent: React.FC = () => {
   const [currentDataBlock, setCurrentDataBlock] = React.useState<GyroscopeSample[]>([]);
   const [isRecording, setIsRecording] = React.useState(false);
   const [serverAddress, setServerAddress] = React.useState("http://192.168.0.42:5999");
-  const [testMessage, setTestMessage] = React.useState("");
+  //const [testMessage, setTestMessage] = React.useState("");
   const [gyroscopeData, setGyroscopeData] = useState<GyroscopeSample>({
     timestamp: Date.now(),
     alpha: 0,
@@ -90,17 +90,17 @@ const GyroscopeComponent: React.FC = () => {
     const result = await indexedDb.getAllValue();
     console.log('Get All Data', JSON.stringify(result));
     //setTestMessage(result);
-    const api = serverAddress + "/api";
-    fetch(api)
+    const api = serverAddress + "/api/saveActivityData";
+/*     fetch(api)
       .then(response => response.json())
       .then(data => {console.log("hello", data.hello); setTestMessage(data.hello)})
-      .catch(error => console.error('Error:', error));
-    /* fetch(api, {
+      .catch(error => console.error('Error:', error)); */
+    fetch(api, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify("hello"),
+        body: JSON.stringify(result),
     })
     .then((response) => {
         if (!response.ok) {
@@ -113,7 +113,7 @@ const GyroscopeComponent: React.FC = () => {
     })
     .catch((error) => {
         console.error('Error sending data:', error);
-    }); */
+    });
   }
 
   const handleClearData = async () => {
@@ -155,7 +155,6 @@ const GyroscopeComponent: React.FC = () => {
             <p>Alpha: {gyroscopeData.alpha}</p>
             <p>Beta: {gyroscopeData.beta}</p>
             <p>Gamma: {gyroscopeData.gamma}</p>
-            <p>Test: {testMessage}</p>
         </div>
         <div>
             <button  onClick={handleRecording}>{!isRecording ? "Start Recording" : "Stop Recording"}</button >
