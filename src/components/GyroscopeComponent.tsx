@@ -181,7 +181,7 @@ const GyroscopeComponent: React.FC = () => {
   };
   return (
     <div>
-      {isPermissionGranted ? (<button onClick={() => {requestOrientationAccess()}}>Request Orientation Access</button>) : <div/>}
+      {!isPermissionGranted ? (<button onClick={() => {requestOrientationAccess()}}>Request Orientation Access</button>) : <div/>}
         <div className="absolute top-0 right-0 p-2">
             <div>
                 <input
