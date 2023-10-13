@@ -69,13 +69,16 @@ const GyroscopeComponent: React.FC = () => {
             }
           })
           .catch(console.error);
+      } else {
+        window.addEventListener('deviceorientation', handleOrientation);
       }
+      
     }
 /*     if (window.DeviceOrientationEvent) {
       window.addEventListener('deviceorientation', handleOrientation);
     } */ else {
-      //console.log('Device orientation not supported.');
-      window.addEventListener('deviceorientation', handleOrientation);
+      console.log('Device orientation not supported.');
+      
     }
       // non iOS 13+
       //window.addEventListener('deviceorientation', handleOrientation);
