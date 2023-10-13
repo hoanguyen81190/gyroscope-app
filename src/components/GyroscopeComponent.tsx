@@ -25,7 +25,7 @@ const GyroscopeComponent: React.FC = () => {
   //For testing purpose only
   const [testMessage, setTestMessage] = React.useState("");
 
-  //const [isPermissionGranted, setIsPermissionGranted] = useState(false);
+  const [isPermissionGranted, setIsPermissionGranted] = useState(false);
 
   //For displaying the data on the screen
   const [gyroscopeData, setGyroscopeData] = useState<GyroscopeSample>({
@@ -64,12 +64,13 @@ const GyroscopeComponent: React.FC = () => {
         requestPermissionFn()
           .then((permissionState: PermissionState) => {
             if (permissionState === 'granted') {
-              //setIsPermissionGranted(true);
+              setIsPermissionGranted(true);
               window.addEventListener('deviceorientation', handleOrientation);
             }
           })
           .catch(console.error);
       } else {
+        setIsPermissionGranted(true);
         window.addEventListener('deviceorientation', handleOrientation);
       }
       
@@ -163,10 +164,10 @@ const GyroscopeComponent: React.FC = () => {
     console.log("DONE")
   }
 
-/*   const handleRequestOrientationAccess = () => {
+  const requestOrientationAccess = () => {
     if (typeof DeviceOrientationEvent !== 'undefined') {
       const requestPermissionFn = (DeviceOrientationEvent as any).requestPermission;
-      if (typeof requestPermissionFn !== 'function') {
+      if (typeof requestPermissionFn === 'function') {
         requestPermissionFn()
           .then((permissionState: PermissionState) => {
             if (permissionState === 'granted') {
@@ -178,14 +179,9 @@ const GyroscopeComponent: React.FC = () => {
       }
     }
   };
- */
   return (
     <div>
-      {/* !isPermissionGranted && (
-        <button onClick={handleRequestOrientationAccess}>
-          Request Orientation Access
-        </button>
-      ) */}
+      {isPermissionGranted ? (<button onClick={() => {requestOrientationAccess()}}>Request Orientation Access</button>) : <div/>}
         <div className="absolute top-0 right-0 p-2">
             <div>
                 <input
