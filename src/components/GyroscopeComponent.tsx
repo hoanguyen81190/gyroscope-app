@@ -6,16 +6,26 @@ import { GyroscopeSample, Activity } from '../core/indexedDb';
 
 import IndexedDb from '../core/indexedDb';
 
+//These are the default activities, can expand later either via hardcode or interface
 const ACTIVITY_LIST = ["upstair", "downstair", "sitting", "walking"]
 
-
-
 const GyroscopeComponent: React.FC = () => {
+  //The label for the activity in recording, can be switch using a drop-down list
   const [activity, setActivity] = React.useState(ACTIVITY_LIST[0]);
+
+  //Store the current sample
   const [currentDataBlock, setCurrentDataBlock] = React.useState<GyroscopeSample[]>([]);
+
+  //Flag to mark the recording
   const [isRecording, setIsRecording] = React.useState(false);
+
+  //Address of the central server to store all data, currently use REST_API, can be switched/expanded to MQTT later
   const [serverAddress, setServerAddress] = React.useState("http://192.168.0.42:5999");
+
+  //For testing purpose only
   const [testMessage, setTestMessage] = React.useState("");
+
+  //For displaying the data on the screen
   const [gyroscopeData, setGyroscopeData] = useState<GyroscopeSample>({
     timestamp: Date.now(),
     alpha: 0,
@@ -23,6 +33,7 @@ const GyroscopeComponent: React.FC = () => {
     gamma: 0,
   });
 
+  //Save the data temporarily in indexedDb of the browser
   async function saveGyroscopeData(activity: Activity) {
     const indexedDb = new IndexedDb();
     await indexedDb.createObjectStore();
@@ -34,14 +45,40 @@ const GyroscopeComponent: React.FC = () => {
     //await tx.done;
   }
 
+  //Webpage initiation
   useEffect(() => {
+
+    //Database initiation
     const runIndexDb = async () => {
         const indexedDb = new IndexedDb();
         await indexedDb.createObjectStore();
     }
     runIndexDb();
 
-    window.addEventListener('deviceorientation', handleOrientation);
+    //Since iOS 12.2, Apple requires permission to access device orientation and motion data
+    /* if (typeof DeviceMotionEvent.requestPermission === 'function') {
+      // iOS 13+
+
+/*       DeviceMotionEvent.requestPermission()
+          .then(response => {
+            if (response == 'granted') {
+              window.addEventListener('devicemotion', (e) => {
+                // do something with e
+              })
+            }
+          })
+          .catch(console.error) */
+      /* DeviceOrientationEvent.requestPermission()
+          .then(response => {
+            if (response == 'granted') {
+              window.addEventListener('deviceorientation', handleOrientation);
+            }
+          })
+          .catch(console.error) */
+    //} else { */
+      // non iOS 13+
+      window.addEventListener('deviceorientation', handleOrientation);
+    //}
 
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
@@ -123,8 +160,18 @@ const GyroscopeComponent: React.FC = () => {
     console.log("DONE")
   }
 
+  const handleAskForPermissionIPhone = () => {
+    DeviceOrientationEvent.requestPermission()
+        .then(response => {
+          if (response == 'granted') {
+            window.addEventListener('deviceorientation', handleOrientation);
+          }
+        })
+        .catch(console.error)
+  }
   return (
     <div>
+        <button  onClick={handleAskForPermissionIPhone}> iPhone Permission </button >
         <div className="absolute top-0 right-0 p-2">
             <div>
                 <input
