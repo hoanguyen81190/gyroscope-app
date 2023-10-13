@@ -25,6 +25,8 @@ const GyroscopeComponent: React.FC = () => {
   //For testing purpose only
   const [testMessage, setTestMessage] = React.useState("");
 
+  //const [isPermissionGranted, setIsPermissionGranted] = useState(false);
+
   //For displaying the data on the screen
   const [gyroscopeData, setGyroscopeData] = useState<GyroscopeSample>({
     timestamp: Date.now(),
@@ -56,29 +58,27 @@ const GyroscopeComponent: React.FC = () => {
     runIndexDb();
 
     //Since iOS 12.2, Apple requires permission to access device orientation and motion data
-    /* if (typeof DeviceMotionEvent.requestPermission === 'function') {
-      // iOS 13+
-
-/*       DeviceMotionEvent.requestPermission()
-          .then(response => {
-            if (response == 'granted') {
-              window.addEventListener('devicemotion', (e) => {
-                // do something with e
-              })
-            }
-          })
-          .catch(console.error) */
-      /* DeviceOrientationEvent.requestPermission()
-          .then(response => {
-            if (response == 'granted') {
+    if (typeof DeviceOrientationEvent !== 'undefined') {
+      const requestPermissionFn = (DeviceOrientationEvent as any).requestPermission;
+      if (typeof requestPermissionFn === 'function') {
+        requestPermissionFn()
+          .then((permissionState: PermissionState) => {
+            if (permissionState === 'granted') {
+              //setIsPermissionGranted(true);
               window.addEventListener('deviceorientation', handleOrientation);
             }
           })
-          .catch(console.error) */
-    //} else { */
-      // non iOS 13+
+          .catch(console.error);
+      }
+    }
+/*     if (window.DeviceOrientationEvent) {
       window.addEventListener('deviceorientation', handleOrientation);
-    //}
+    } */ else {
+      //console.log('Device orientation not supported.');
+      window.addEventListener('deviceorientation', handleOrientation);
+    }
+      // non iOS 13+
+      //window.addEventListener('deviceorientation', handleOrientation);
 
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
@@ -160,18 +160,29 @@ const GyroscopeComponent: React.FC = () => {
     console.log("DONE")
   }
 
-  const handleAskForPermissionIPhone = () => {
-    DeviceOrientationEvent.requestPermission()
-        .then(response => {
-          if (response == 'granted') {
-            window.addEventListener('deviceorientation', handleOrientation);
-          }
-        })
-        .catch(console.error)
-  }
+/*   const handleRequestOrientationAccess = () => {
+    if (typeof DeviceOrientationEvent !== 'undefined') {
+      const requestPermissionFn = (DeviceOrientationEvent as any).requestPermission;
+      if (typeof requestPermissionFn !== 'function') {
+        requestPermissionFn()
+          .then((permissionState: PermissionState) => {
+            if (permissionState === 'granted') {
+              setIsPermissionGranted(true);
+              window.addEventListener('deviceorientation', handleOrientation);
+            }
+          })
+          .catch(console.error);
+      }
+    }
+  };
+ */
   return (
     <div>
-        <button  onClick={handleAskForPermissionIPhone}> iPhone Permission </button >
+      {/* !isPermissionGranted && (
+        <button onClick={handleRequestOrientationAccess}>
+          Request Orientation Access
+        </button>
+      ) */}
         <div className="absolute top-0 right-0 p-2">
             <div>
                 <input
