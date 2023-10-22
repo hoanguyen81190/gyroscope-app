@@ -99,21 +99,24 @@ const GyroscopeComponent: React.FC = () => {
         gamma: event.gamma || 0,
       }
     setGyroscopeData(val);
+    setTestMessage("number of sample" + currentDataBlock.length);
 
     if (isRecording) {
       // Add the gyroscope data to the list
       console.log("start recording")
       setCurrentDataBlock(prevData => [...prevData, val]);
-      setTestMessage("number of sample" + currentDataBlock.length);
+      
     }
   };
 
   const handleActivityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setActivity(e.target.value as string);
   };
+  console.log("hello", isRecording)
 
   const handleRecording = () => {
-    setIsRecording(!isRecording);
+    setIsRecording(prev => !prev);
+    console.log("recording status", isRecording);
 
     if (isRecording) {
         setTestMessage("start recording");
@@ -138,8 +141,9 @@ const GyroscopeComponent: React.FC = () => {
     const api = serverAddress + "/api";
     axios.post(api, result)
       .then(response=> {
-        setTestMessage(response.data);
-        console.log('Response:', response.data);
+        console.log('Response:', response.data.data);
+        setTestMessage(response.data.data);
+        
       })
       .catch(error => {
         console.error('Error:', error);
