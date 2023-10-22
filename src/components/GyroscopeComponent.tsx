@@ -102,8 +102,9 @@ const GyroscopeComponent: React.FC = () => {
 
     if (isRecording) {
       // Add the gyroscope data to the list
-      
+      console.log("start recording")
       setCurrentDataBlock(prevData => [...prevData, val]);
+      setTestMessage("number of sample" + currentDataBlock.length);
     }
   };
 
@@ -112,9 +113,10 @@ const GyroscopeComponent: React.FC = () => {
   };
 
   const handleRecording = () => {
-    setIsRecording(prev => !prev);
+    setIsRecording(!isRecording);
 
     if (isRecording) {
+        setTestMessage("start recording");
         setCurrentDataBlock([]);
     }
 
@@ -134,47 +136,14 @@ const GyroscopeComponent: React.FC = () => {
     console.log('Get All Data', JSON.stringify(result));
     //setTestMessage(result);
     const api = serverAddress + "/api";
-/*     fetch(api)
-      .then(response => response.json())
-      .then(data => {console.log("hello", data.hello); setTestMessage(data.data)})
-      .catch(error => console.error('Error:', error)); */
-/*     fetch(api, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(result),
-    })
-    .then((response) => {
-        if (!response.ok) {
-        throw new Error('Network response was not ok');
-        }
-        console.log('Data successfully sent: 123231', response);
-        return response.json();
-    })
-    .then((data) => {
-        setTestMessage(data.data);
-        console.log('Data successfully sent:', data);
-    })
-    .catch((error) => {
-        console.error('Error sending data:', error);
-    }); */
     axios.post(api, result)
       .then(response=> {
-        setTestMessage(JSON.stringify(response.data));
+        setTestMessage(response.data);
         console.log('Response:', response.data);
       })
       .catch(error => {
         console.error('Error:', error);
       }); 
-/*       axios.get(api)
-      .then(response=> {
-        setTestMessage(JSON.stringify(response.data));
-        console.log('Response:', response.data);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      }); */
   }
 
   const handleClearData = async () => {
