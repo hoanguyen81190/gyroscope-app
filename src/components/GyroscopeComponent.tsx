@@ -134,7 +134,7 @@ const GyroscopeComponent: React.FC = () => {
     const api = serverAddress + "/api/saveActivityData";
 /*     fetch(api)
       .then(response => response.json())
-      .then(data => {console.log("hello", data.hello); setTestMessage(data.hello)})
+      .then(data => {console.log("hello", data.hello); setTestMessage(data.data)})
       .catch(error => console.error('Error:', error)); */
     fetch(api, {
         method: 'PUT',
@@ -150,6 +150,7 @@ const GyroscopeComponent: React.FC = () => {
         return response.json();
     })
     .then((data) => {
+        setTestMessage(data.data);
         console.log('Data successfully sent:', data);
     })
     .catch((error) => {
