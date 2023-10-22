@@ -133,7 +133,7 @@ const GyroscopeComponent: React.FC = () => {
     const result = await indexedDb.getAllValue();
     console.log('Get All Data', JSON.stringify(result));
     //setTestMessage(result);
-    const api = serverAddress + "/api/saveActivityData";
+    const api = serverAddress + "/api";
 /*     fetch(api)
       .then(response => response.json())
       .then(data => {console.log("hello", data.hello); setTestMessage(data.data)})
@@ -159,7 +159,15 @@ const GyroscopeComponent: React.FC = () => {
     .catch((error) => {
         console.error('Error sending data:', error);
     }); */
-    axios.post(api, result)
+/*     axios.post(api, result)
+      .then(response=> {
+        setTestMessage(JSON.stringify(response.data));
+        console.log('Response:', response.data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      }); */
+      axios.get(api)
       .then(response=> {
         setTestMessage(JSON.stringify(response.data));
         console.log('Response:', response.data);
