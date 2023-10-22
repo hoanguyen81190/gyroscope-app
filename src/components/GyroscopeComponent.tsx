@@ -83,13 +83,30 @@ const GyroscopeComponent: React.FC = () => {
       console.log('Device orientation not supported.');
       
     }
+
+    //let gyroscopeInterval;
+
+    /* if (isRecording) {
+      gyroscopeInterval = setInterval(() => {
+        const newGyroscopeData: GyroscopeSample = {
+          timestamp: Date.now(),
+          alpha: Math.random(),
+          beta: Math.random(),
+          gamma: Math.random(),
+        };
+        console.log("recording la ")
+        setCurrentDataBlock(prevData => [...prevData, newGyroscopeData]);
+      }, 1000);
+    } else {
+      clearInterval(gyroscopeInterval);
+    } */
       // non iOS 13+
       //window.addEventListener('deviceorientation', handleOrientation);
 
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
     };
-  }, []);
+  }, [isRecording]);
 
   const handleOrientation = (event: DeviceOrientationEvent) => {
     const val: GyroscopeSample = {
