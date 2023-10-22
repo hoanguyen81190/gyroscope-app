@@ -106,7 +106,7 @@ const GyroscopeComponent: React.FC = () => {
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
     };
-  }, [isRecording]);
+  }, [isRecording, currentDataBlock]);
 
   const handleOrientation = (event: DeviceOrientationEvent) => {
     const val: GyroscopeSample = {
