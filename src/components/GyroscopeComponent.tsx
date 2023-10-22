@@ -137,7 +137,7 @@ const GyroscopeComponent: React.FC = () => {
       .then(data => {console.log("hello", data.hello); setTestMessage(data.data)})
       .catch(error => console.error('Error:', error)); */
     fetch(api, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -147,6 +147,7 @@ const GyroscopeComponent: React.FC = () => {
         if (!response.ok) {
         throw new Error('Network response was not ok');
         }
+        console.log('Data successfully sent: 123231', response);
         return response.json();
     })
     .then((data) => {
