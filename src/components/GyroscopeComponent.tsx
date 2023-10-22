@@ -159,7 +159,15 @@ const GyroscopeComponent: React.FC = () => {
     .catch((error) => {
         console.error('Error sending data:', error);
     }); */
-/*     axios.post(api, result)
+    axios.post(api, result)
+      .then(response=> {
+        setTestMessage(JSON.stringify(response.data));
+        console.log('Response:', response.data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      }); 
+/*       axios.get(api)
       .then(response=> {
         setTestMessage(JSON.stringify(response.data));
         console.log('Response:', response.data);
@@ -167,14 +175,6 @@ const GyroscopeComponent: React.FC = () => {
       .catch(error => {
         console.error('Error:', error);
       }); */
-      axios.get(api)
-      .then(response=> {
-        setTestMessage(JSON.stringify(response.data));
-        console.log('Response:', response.data);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
   }
 
   const handleClearData = async () => {
