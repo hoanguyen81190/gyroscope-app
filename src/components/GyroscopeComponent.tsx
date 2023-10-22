@@ -138,6 +138,9 @@ const GyroscopeComponent: React.FC = () => {
       .catch(error => console.error('Error:', error)); */
     fetch(api, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(result),
     })
     .then((response) => {
