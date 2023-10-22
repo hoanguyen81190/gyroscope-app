@@ -92,7 +92,7 @@ const GyroscopeComponent: React.FC = () => {
   }, []);
 
   const handleOrientation = (event: DeviceOrientationEvent) => {
-    let val: GyroscopeSample = {
+    const val: GyroscopeSample = {
         timestamp: Date.now(),
         alpha: event.alpha || 0,
         beta: event.beta || 0,
@@ -102,7 +102,7 @@ const GyroscopeComponent: React.FC = () => {
 
     if (isRecording) {
       // Add the gyroscope data to the list
-      console.log("start recording")
+      console.log("is recording")
       setCurrentDataBlock(prevData => [...prevData, val]);
       
     }
