@@ -131,12 +131,12 @@ const GyroscopeComponent: React.FC = () => {
     const result = await indexedDb.getAllValue();
     console.log('Get All Data', JSON.stringify(result));
     //setTestMessage(result);
-    const api = serverAddress + "/api";
-    fetch(api)
+    const api = serverAddress + "/api/saveActivityData";
+/*     fetch(api)
       .then(response => response.json())
       .then(data => {console.log("hello", data.hello); setTestMessage(data.hello)})
-      .catch(error => console.error('Error:', error));
-    /* fetch(api, {
+      .catch(error => console.error('Error:', error)); */
+    fetch(api, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -154,7 +154,7 @@ const GyroscopeComponent: React.FC = () => {
     })
     .catch((error) => {
         console.error('Error sending data:', error);
-    }); */
+    });
   }
 
   const handleClearData = async () => {
