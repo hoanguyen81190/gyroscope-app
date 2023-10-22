@@ -6,6 +6,8 @@ import { GyroscopeSample, Activity } from '../core/indexedDb';
 
 import IndexedDb from '../core/indexedDb';
 
+import axios from 'axios';
+
 //These are the default activities, can expand later either via hardcode or interface
 const ACTIVITY_LIST = ["upstair", "downstair", "sitting", "walking"]
 
@@ -136,7 +138,7 @@ const GyroscopeComponent: React.FC = () => {
       .then(response => response.json())
       .then(data => {console.log("hello", data.hello); setTestMessage(data.data)})
       .catch(error => console.error('Error:', error)); */
-    fetch(api, {
+/*     fetch(api, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -156,7 +158,15 @@ const GyroscopeComponent: React.FC = () => {
     })
     .catch((error) => {
         console.error('Error sending data:', error);
-    });
+    }); */
+    axios.post(api, result)
+      .then(response=> {
+        setTestMessage(JSON.stringify(response.data));
+        console.log('Response:', response.data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
   }
 
   const handleClearData = async () => {
