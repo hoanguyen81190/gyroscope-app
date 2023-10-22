@@ -99,7 +99,10 @@ const GyroscopeComponent: React.FC = () => {
         gamma: event.gamma || 0,
       }
     setGyroscopeData(val);
-    setTestMessage("number of sample" + currentDataBlock.length);
+
+    if (!isRecording) {
+
+    }
 
     if (isRecording) {
       // Add the gyroscope data to the list
@@ -112,24 +115,19 @@ const GyroscopeComponent: React.FC = () => {
   const handleActivityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setActivity(e.target.value as string);
   };
-  console.log("hello", isRecording)
+  
+  const startRecording = () => {
+    setIsRecording(true);
+    setCurrentDataBlock([]);
+  };
 
-  const handleRecording = () => {
-    setIsRecording(prev => !prev);
-    console.log("recording status", isRecording);
-
-    if (isRecording) {
-        setTestMessage("start recording");
-        setCurrentDataBlock([]);
-    }
-
-    if (!isRecording) {
-        const oneActivity: Activity = {
-            label: activity,
-            data: [...currentDataBlock],
-        };
-        saveGyroscopeData(oneActivity);
-    }
+  const stopRecording = () => {
+    setIsRecording(false);
+    const oneActivity: Activity = {
+      label: activity,
+      data: [...currentDataBlock],
+    };
+    saveGyroscopeData(oneActivity);
   };
 
   const handleSendData = async () => {
@@ -208,7 +206,7 @@ const GyroscopeComponent: React.FC = () => {
             <p>Test: {testMessage}</p>
         </div>
         <div>
-            <button  onClick={handleRecording}>{!isRecording ? "Start Recording" : "Stop Recording"}</button >
+            <button  onClick={isRecording ? stopRecording : startRecording}>{!isRecording ? "Start Recording" : "Stop Recording"}</button >
         </div>
     </div>
   );
