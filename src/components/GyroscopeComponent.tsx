@@ -100,10 +100,6 @@ const GyroscopeComponent: React.FC = () => {
       }
     setGyroscopeData(val);
 
-    if (!isRecording) {
-
-    }
-
     if (isRecording) {
       // Add the gyroscope data to the list
       console.log("start recording")
@@ -119,10 +115,12 @@ const GyroscopeComponent: React.FC = () => {
   const startRecording = () => {
     setIsRecording(true);
     setCurrentDataBlock([]);
+    setTestMessage("number of samples " + currentDataBlock.length);
   };
 
   const stopRecording = () => {
     setIsRecording(false);
+    setTestMessage("number of samples " + currentDataBlock.length);
     const oneActivity: Activity = {
       label: activity,
       data: [...currentDataBlock],
