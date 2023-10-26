@@ -99,7 +99,7 @@ const GyroscopeComponent: React.FC = () => {
   }, [isRecording]);
 
   const handleOrientation = (event: DeviceOrientationEvent ) => {
-    const currentTimestamp = event.timeStamp;
+    const currentTimestamp = Date.now();
 
     const timeInterval = currentTimestamp - lastTimestamp;
     const frequency = 1000 / timeInterval; // Convert to Hz (milliseconds to seconds)
