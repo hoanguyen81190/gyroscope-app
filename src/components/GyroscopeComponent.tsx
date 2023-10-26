@@ -96,7 +96,7 @@ const GyroscopeComponent: React.FC = () => {
       window.removeEventListener('devicemotion', handleMotion);
 
     };
-  }, [isRecording, lastTimestamp]);
+  }, [isRecording]);
 
   const handleOrientation = (event: DeviceOrientationEvent ) => {
     const currentTimestamp = Date.now();
