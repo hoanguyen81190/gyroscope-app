@@ -101,7 +101,8 @@ const GyroscopeComponent: React.FC = () => {
   const handleOrientation = (event: DeviceOrientationEvent ) => {
     const currentTimestamp = event.timeStamp;
 
-    //const timeInterval = currentTimestamp - lastTimestamp;
+    const timeInterval = currentTimestamp - lastTimestamp;
+    console.log(timeInterval)
     //const frequency = 1000 / timeInterval; // Convert to Hz (milliseconds to seconds)
     setGyroscopeFrequency(currentTimestamp);
 
