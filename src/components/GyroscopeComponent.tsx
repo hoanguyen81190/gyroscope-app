@@ -102,8 +102,8 @@ const GyroscopeComponent: React.FC = () => {
     const currentTimestamp = Date.now();
 
     const timeInterval = currentTimestamp - lastTimestamp;
-    const frequency = 1000 / timeInterval; // Convert to Hz (milliseconds to seconds)
-    setGyroscopeFrequency(frequency);
+    //const frequency = 1000 / timeInterval; // Convert to Hz (milliseconds to seconds)
+    setGyroscopeFrequency(timeInterval);
 
     setLastTimestamp(currentTimestamp);
     const val: GyroscopeSample = {
