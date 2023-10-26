@@ -32,9 +32,12 @@ const GyroscopeComponent: React.FC = () => {
   //For displaying the data on the screen
   const [gyroscopeData, setGyroscopeData] = useState<GyroscopeSample>({
     timestamp: Date.now(),
-    alpha: 0,
-    beta: 0,
-    gamma: 0,
+    yaw: 0,
+    pitch: 0,
+    roll: 0,
+    x: 0,
+    y: 0,
+    z: 0
   });
 
   //Save the data temporarily in indexedDb of the browser
@@ -68,12 +71,14 @@ const GyroscopeComponent: React.FC = () => {
             if (permissionState === 'granted') {
               setIsPermissionGranted(true);
               window.addEventListener('deviceorientation', handleOrientation);
+              window.addEventListener('devicemotion', handleOrientation);
             }
           })
           .catch(console.error);
       } else {
         setIsPermissionGranted(true);
         window.addEventListener('deviceorientation', handleOrientation);
+        window.addEventListener('devicemotion', handleOrientation);
       }
       
     }
@@ -105,16 +110,37 @@ const GyroscopeComponent: React.FC = () => {
 
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
+      window.removeEventListener('devicemotion', handleOrientation);
+
     };
   }, [isRecording, currentDataBlock]);
 
-  const handleOrientation = (event: DeviceOrientationEvent) => {
-    const val: GyroscopeSample = {
+  const handleOrientation = (event: DeviceOrientationEvent | DeviceMotionEvent) => {
+    let val: GyroscopeSample = {
+      timestamp: Date.now(),
+      yaw:  0,
+      pitch:  0,
+      roll:  0,
+      x: 0,
+      y: 0,
+      z: 0
+    }
+    if (event instanceof DeviceOrientationEvent) {
+      val.yaw = event.alpha || 0
+      val.pitch = event.beta || 0
+      val.roll = event.gamma || 0
+    } else if (event instanceof DeviceMotionEvent) {
+      val.x = event.acceleration?.x || 0
+      val.y = event.acceleration?.y || 0
+      val.z = event.acceleration?.z || 0
+    }
+/*     const val: GyroscopeSample = {
         timestamp: Date.now(),
-        alpha: event.alpha || 0,
-        beta: event.beta || 0,
-        gamma: event.gamma || 0,
-      }
+        yaw: alpha || 0,
+        pitch: beta || 0,
+        roll: gamma || 0,
+        accelerometer: event.
+      } */
     setGyroscopeData(val);
 
     if (isRecording) {
@@ -215,9 +241,14 @@ const GyroscopeComponent: React.FC = () => {
         </div>
         <div>
             <h2>Gyroscope Data:</h2>
-            <p>Alpha: {gyroscopeData.alpha}</p>
-            <p>Beta: {gyroscopeData.beta}</p>
-            <p>Gamma: {gyroscopeData.gamma}</p>
+            <p>Yaw: {gyroscopeData.yaw}</p>
+            <p>Pitch: {gyroscopeData.pitch}</p>
+            <p>Roll: {gyroscopeData.roll}</p>
+
+            <h2>Accelerometer Data:</h2>
+            <p>X: {gyroscopeData.x}</p>
+            <p>Y: {gyroscopeData.y}</p>
+            <p>Z: {gyroscopeData.z}</p>
             <p>Test: {testMessage}</p>
         </div>
         <div>

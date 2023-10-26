@@ -2,9 +2,10 @@ import { DBSchema, openDB } from 'idb';
 
 export type GyroscopeSample = {
     timestamp: number;
-    alpha: number;
-    beta: number;
-    gamma: number;
+    yaw: number;
+    pitch: number;
+    roll: number;
+    accelerometer: number;
 }
 
 // Define a schema for your database
