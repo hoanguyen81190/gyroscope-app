@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 
-import { GyroscopeSample, Activity } from '../core/indexedDb';
+import { GyroscopeSample, MotionSample, Activity } from '../core/indexedDb';
 
 import IndexedDb from '../core/indexedDb';
 
@@ -16,7 +16,8 @@ const GyroscopeComponent: React.FC = () => {
   const [activity, setActivity] = React.useState(ACTIVITY_LIST[0]);
 
   //Store the current sample
-  const [currentDataBlock, setCurrentDataBlock] = React.useState<GyroscopeSample[]>([]);
+  const [currentGyroscopeDataBlock, setCurrentGyroscopeDataBlock] = React.useState<GyroscopeSample[]>([]);
+  const [currentMotionDataBlock, setCurrentMotionDataBlock] = React.useState<MotionSample[]>([]);
 
   //Flag to mark the recording
   const [isRecording, setIsRecording] = React.useState(false);
@@ -35,9 +36,13 @@ const GyroscopeComponent: React.FC = () => {
     yaw: 0,
     pitch: 0,
     roll: 0,
+  });
+
+  const [motionData, setMotionData] = useState<MotionSample>({
+    timestamp: Date.now(),
     x: 0,
     y: 0,
-    z: 0
+    z: 0,
   });
 
   //Save the data temporarily in indexedDb of the browser
@@ -45,11 +50,6 @@ const GyroscopeComponent: React.FC = () => {
     const indexedDb = new IndexedDb();
     await indexedDb.createObjectStore();
     await indexedDb.putValue(activity);
-    //const db = await dbPromise;
-    //const tx = db.transaction('gyroscopeData', 'readwrite');
-    //const store = tx.objectStore('gyroscopeData');
-    //await store.add(activity);
-    //await tx.done;
   }
 
   //Webpage initiation
@@ -71,83 +71,56 @@ const GyroscopeComponent: React.FC = () => {
             if (permissionState === 'granted') {
               setIsPermissionGranted(true);
               window.addEventListener('deviceorientation', handleOrientation);
-              window.addEventListener('devicemotion', handleOrientation);
+              window.addEventListener('devicemotion', handleMotion);
             }
           })
           .catch(console.error);
       } else {
         setIsPermissionGranted(true);
         window.addEventListener('deviceorientation', handleOrientation);
-        window.addEventListener('devicemotion', handleOrientation);
+        window.addEventListener('devicemotion', handleMotion);
       }
       
     }
-/*     if (window.DeviceOrientationEvent) {
-      window.addEventListener('deviceorientation', handleOrientation);
-    } */ else {
+    else {
       console.log('Device orientation not supported.');
       
     }
 
-    //let gyroscopeInterval;
-
-    /* if (isRecording) {
-      gyroscopeInterval = setInterval(() => {
-        const newGyroscopeData: GyroscopeSample = {
-          timestamp: Date.now(),
-          alpha: Math.random(),
-          beta: Math.random(),
-          gamma: Math.random(),
-        };
-        console.log("recording la ")
-        setCurrentDataBlock(prevData => [...prevData, newGyroscopeData]);
-      }, 1000);
-    } else {
-      clearInterval(gyroscopeInterval);
-    } */
-      // non iOS 13+
-      //window.addEventListener('deviceorientation', handleOrientation);
-
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
-      window.removeEventListener('devicemotion', handleOrientation);
+      window.removeEventListener('devicemotion', handleMotion);
 
     };
-  }, [isRecording, currentDataBlock]);
+  }, [isRecording, currentGyroscopeDataBlock, currentMotionDataBlock]);
 
-  const handleOrientation = (event: DeviceOrientationEvent | DeviceMotionEvent) => {
-    let val: GyroscopeSample = {
-      timestamp: Date.now(),
-      yaw:  0,
-      pitch:  0,
-      roll:  0,
-      x: 0,
-      y: 0,
-      z: 0
-    }
-    if (event instanceof DeviceOrientationEvent) {
-      val.yaw = event.alpha || 0
-      val.pitch = event.beta || 0
-      val.roll = event.gamma || 0
-    } else if (event instanceof DeviceMotionEvent) {
-      val.x = event.acceleration?.x || 0
-      val.y = event.acceleration?.y || 0
-      val.z = event.acceleration?.z || 0
-    }
-/*     const val: GyroscopeSample = {
+  const handleOrientation = (event: DeviceOrientationEvent ) => {
+    const val: GyroscopeSample = {
         timestamp: Date.now(),
-        yaw: alpha || 0,
-        pitch: beta || 0,
-        roll: gamma || 0,
-        accelerometer: event.
-      } */
+        yaw: event.alpha || 0,
+        pitch: event.beta || 0,
+        roll: event.gamma || 0,
+    } 
     setGyroscopeData(val);
 
     if (isRecording) {
       // Add the gyroscope data to the list
-      console.log("is recording")
-      setCurrentDataBlock(prevData => [...prevData, val]);
+      setCurrentGyroscopeDataBlock(prevData => [...prevData, val]);
       
+    }
+  };
+  const handleMotion = (event: DeviceMotionEvent) => {
+    const val: MotionSample = {
+        timestamp: Date.now(),
+        x: event.acceleration?.x || 0,
+        y: event.acceleration?.y || 0,
+        z: event.acceleration?.z || 0,
+    } 
+    setMotionData(val);
+
+    if (isRecording) {
+      // Add the gyroscope data to the list
+      setCurrentMotionDataBlock(prevData => [...prevData, val]);
     }
   };
 
@@ -157,16 +130,18 @@ const GyroscopeComponent: React.FC = () => {
   
   const startRecording = () => {
     setIsRecording(true);
-    setCurrentDataBlock([]);
-    setTestMessage("number of samples " + currentDataBlock.length);
+    setCurrentGyroscopeDataBlock([]);
+    setCurrentMotionDataBlock([]);
+    setTestMessage("number of samples " + currentGyroscopeDataBlock.length);
   };
 
   const stopRecording = () => {
     setIsRecording(false);
-    setTestMessage("number of samples " + currentDataBlock.length);
+    setTestMessage("number of samples " + currentGyroscopeDataBlock.length);
     const oneActivity: Activity = {
       label: activity,
-      data: [...currentDataBlock],
+      gyroscope_data: [...currentGyroscopeDataBlock],
+      motion_data: [...currentMotionDataBlock],
     };
     saveGyroscopeData(oneActivity);
   };
@@ -246,9 +221,9 @@ const GyroscopeComponent: React.FC = () => {
             <p>Roll: {gyroscopeData.roll}</p>
 
             <h2>Accelerometer Data:</h2>
-            <p>X: {gyroscopeData.x}</p>
-            <p>Y: {gyroscopeData.y}</p>
-            <p>Z: {gyroscopeData.z}</p>
+            <p>X: {motionData.x}</p>
+            <p>Y: {motionData.y}</p>
+            <p>Z: {motionData.z}</p>
             <p>Test: {testMessage}</p>
         </div>
         <div>

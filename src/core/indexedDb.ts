@@ -5,44 +5,50 @@ export type GyroscopeSample = {
     yaw: number;
     pitch: number;
     roll: number;
+}
+
+export type MotionSample = {
+    timestamp: number;
     x: number;
     y: number;
     z: number;
 }
 
+
 export type Activity = {
     label: string;
-    data: GyroscopeSample[]; // Array of [timestamp, alpha, beta, gamma]
+    gyroscope_data: GyroscopeSample[]; // Array of [timestamp, alpha, beta, gamma]
+    motion_data: MotionSample[]; // Array of [timestamp, alpha, beta, gamma]
 };
 
 // Define a schema for your database
-interface GyroscopeDatabaseSchema extends DBSchema {
-    gyroscopeData: {
+interface ActivityDatabaseSchema extends DBSchema {
+    activityData: {
       key: number; // This will be an auto-incrementing key
       value: Activity;
       indexes: { 'by-label': number };
     };
   }
 
-const TABLE = 'gyroscopeData';
+const TABLE = 'activityData';
 
 class IndexedDb {
     private database: string;
     private db: any;
 
     constructor() {
-        this.database = 'gyroscope-data';
+        this.database = 'activity-data';
     }
 
     public async createObjectStore() {
         try {
-            this.db = await openDB<GyroscopeDatabaseSchema>(this.database, 1, {
+            this.db = await openDB<ActivityDatabaseSchema>(this.database, 1, {
                 upgrade(db) {
                     //db.createObjectStore(tableName, { autoIncrement: true, keyPath: 'id' });
-                    const gyroscopeDataStore = db.createObjectStore(TABLE, { keyPath: 'key', autoIncrement: true });
+                    const activityDataStore = db.createObjectStore(TABLE, { keyPath: 'key', autoIncrement: true });
     
                     // Create an index for label
-                    gyroscopeDataStore.createIndex('by-label', 'label', { unique: false });
+                    activityDataStore.createIndex('by-label', 'label', { unique: false });
                 },
             });
         } catch (error) {
