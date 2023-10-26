@@ -23,7 +23,7 @@ const GyroscopeComponent: React.FC = () => {
   const [isRecording, setIsRecording] = React.useState(false);
 
   //Address of the central server to store all data, currently use REST_API, can be switched/expanded to MQTT later
-  const [serverAddress, setServerAddress] = React.useState("http://192.168.0.42:5999");
+  const [serverAddress, setServerAddress] = React.useState("");
 
   //For testing purpose only
   const [testMessage, setTestMessage] = React.useState("");
@@ -92,7 +92,7 @@ const GyroscopeComponent: React.FC = () => {
       window.removeEventListener('devicemotion', handleMotion);
 
     };
-  }, []);
+  }, [isRecording]);
 
   const handleOrientation = (event: DeviceOrientationEvent ) => {
     const val: GyroscopeSample = {
