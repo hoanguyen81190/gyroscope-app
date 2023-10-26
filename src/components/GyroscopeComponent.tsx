@@ -25,10 +25,6 @@ const GyroscopeComponent: React.FC = () => {
   //Address of the central server to store all data, currently use REST_API, can be switched/expanded to MQTT later
   const [serverAddress, setServerAddress] = React.useState("http://192.168.0.42:5999");
 
-  const [gyroscopeFrequency, setGyroscopeFrequency] = useState(0);
-
-  const [lastTimestamp, setLastTimestamp] = useState(0);
-
   //For testing purpose only
   const [testMessage, setTestMessage] = React.useState("");
 
@@ -96,17 +92,9 @@ const GyroscopeComponent: React.FC = () => {
       window.removeEventListener('devicemotion', handleMotion);
 
     };
-  }, [isRecording]);
+  }, []);
 
   const handleOrientation = (event: DeviceOrientationEvent ) => {
-    const currentTimestamp = Date.now();
-
-    const timeInterval = currentTimestamp - lastTimestamp;
-    //console.log(timeInterval)
-    const frequency = 1000 / timeInterval; // Convert to Hz (milliseconds to seconds)
-    setGyroscopeFrequency(frequency);
-
-    setLastTimestamp(currentTimestamp);
     const val: GyroscopeSample = {
         timestamp: Date.now(),
         yaw: event.alpha || 0,
@@ -231,8 +219,6 @@ const GyroscopeComponent: React.FC = () => {
             <p>Yaw: {gyroscopeData.yaw}</p>
             <p>Pitch: {gyroscopeData.pitch}</p>
             <p>Roll: {gyroscopeData.roll}</p>
-
-            <p>Gyroscope frequency: {gyroscopeFrequency} Hz</p>
 
             <h2>Accelerometer Data:</h2>
             <p>X: {motionData.x}</p>
