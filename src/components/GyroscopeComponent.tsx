@@ -99,7 +99,7 @@ const GyroscopeComponent: React.FC = () => {
   }, [isRecording]);
 
   const handleOrientation = (event: DeviceOrientationEvent ) => {
-    const currentTimestamp = event.timeStamp;
+    const currentTimestamp = Date.now();
 
     const timeInterval = currentTimestamp - lastTimestamp;
     console.log(timeInterval)
@@ -108,7 +108,7 @@ const GyroscopeComponent: React.FC = () => {
 
     setLastTimestamp(currentTimestamp);
     const val: GyroscopeSample = {
-        timestamp: event.timeStamp,
+        timestamp: Date.now(),
         yaw: event.alpha || 0,
         pitch: event.beta || 0,
         roll: event.gamma || 0,
@@ -123,7 +123,7 @@ const GyroscopeComponent: React.FC = () => {
   };
   const handleMotion = (event: DeviceMotionEvent) => {
     const val: MotionSample = {
-        timestamp: event.timeStamp,
+        timestamp: Date.now(),
         x: event.acceleration?.x || 0,
         y: event.acceleration?.y || 0,
         z: event.acceleration?.z || 0,
