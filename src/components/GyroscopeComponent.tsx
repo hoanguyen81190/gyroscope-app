@@ -193,7 +193,7 @@ const GyroscopeComponent: React.FC = () => {
 
   const stopRecording = () => {
     //setIsRecording(false);
-    //setTestMessage("number of samples " + currentGyroscopeDataBlock.length);
+    setTestMessage("number of samples " + recordingState[STATE_DATA.gyro].length);
     dispatch({ type: RECORDING_ACTION.stop })
 
     const oneActivity: Activity = {
