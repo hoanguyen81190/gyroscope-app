@@ -47,7 +47,7 @@ function reducer(state: any, action: any) {
     case RECORDING_ACTION.saving:
       return {
         ...state,
-        [action.target]: [...state[action.target], ...action.items]
+        [action.target]: [...state[action.target], action.items]
       }
     default:
       return state;
