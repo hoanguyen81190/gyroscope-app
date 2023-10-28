@@ -1,6 +1,6 @@
 // src/GyroscopeComponent.tsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useReducer } from 'react';
 
 import { GyroscopeSample, MotionSample, Activity } from '../core/indexedDb';
 
@@ -11,16 +11,60 @@ import axios from 'axios';
 //These are the default activities, can expand later either via hardcode or interface
 const ACTIVITY_LIST = ["upstair", "downstair", "sitting", "walking"]
 
+const RECORDING_ACTION = {
+  start: 'startRecording',
+  stop: 'stopRecording',
+  saving: 'savingRecording'
+}
+
+const STATE_DATA = {
+  gyro: 'currentGyroscopeDataBlock',
+  motion: 'currentMotionDataBlock'
+}
+
+const initialRecordingState = {
+  isRecording: false,
+  currentGyroscopeDataBlock: [],
+  currentMotionDataBlock: []
+};
+
+function reducer(state: any, action: any) {
+  switch (action.type) {
+    case RECORDING_ACTION.start:
+      return {
+        ...state,
+        isRecording: true,
+        //currentGyroscopeDataBlock: [],
+        //currentMotionDataBlock: [],
+      };
+    case RECORDING_ACTION.stop:
+      return {
+        ...state,
+        isRecording: false,
+        currentGyroscopeDataBlock: [],
+        currentMotionDataBlock: [],
+      };
+    case RECORDING_ACTION.saving:
+      return {
+        ...state,
+        [action.target]: [...state[action.target], ...action.items]
+      }
+    default:
+      return state;
+  }
+}
+
 const GyroscopeComponent: React.FC = () => {
   //The label for the activity in recording, can be switch using a drop-down list
   const [activity, setActivity] = React.useState(ACTIVITY_LIST[0]);
 
   //Store the current sample
-  const [currentGyroscopeDataBlock, setCurrentGyroscopeDataBlock] = React.useState<GyroscopeSample[]>([]);
-  const [currentMotionDataBlock, setCurrentMotionDataBlock] = React.useState<MotionSample[]>([]);
+  const [recordingState, dispatch] = useReducer(reducer, initialRecordingState);
+  //const [currentGyroscopeDataBlock, setCurrentGyroscopeDataBlock] = React.useState<GyroscopeSample[]>([]);
+  //const [currentMotionDataBlock, setCurrentMotionDataBlock] = React.useState<MotionSample[]>([]);
 
   //Flag to mark the recording
-  const [isRecording, setIsRecording] = React.useState(false);
+  //const [isRecording, setIsRecording] = React.useState(false);
 
   //Address of the central server to store all data, currently use REST_API, can be switched/expanded to MQTT later
   const [serverAddress, setServerAddress] = React.useState("");
@@ -92,7 +136,7 @@ const GyroscopeComponent: React.FC = () => {
       window.removeEventListener('devicemotion', handleMotion);
 
     };
-  }, [isRecording]);
+  }, []);
 
   const handleOrientation = (event: DeviceOrientationEvent ) => {
     const val: GyroscopeSample = {
@@ -103,10 +147,15 @@ const GyroscopeComponent: React.FC = () => {
     } 
     setGyroscopeData(val);
 
-    if (isRecording) {
+    if (recordingState.isRecording) {
       // Add the gyroscope data to the list
-      setCurrentGyroscopeDataBlock(prevData => [...prevData, val]);
-      
+      //setCurrentGyroscopeDataBlock(prevData => [...prevData, val]);
+      //dispatch({ type: 'addItems', 'currentGyroscopeDataBlock', val ]});
+      dispatch({ 
+        type: RECORDING_ACTION.saving, 
+        target: STATE_DATA.gyro, 
+        items: val 
+      });
     }
   };
   const handleMotion = (event: DeviceMotionEvent) => {
@@ -118,9 +167,14 @@ const GyroscopeComponent: React.FC = () => {
     } 
     setMotionData(val);
 
-    if (isRecording) {
+    if (recordingState.isRecording) {
       // Add the gyroscope data to the list
-      setCurrentMotionDataBlock(prevData => [...prevData, val]);
+      //setCurrentMotionDataBlock(prevData => [...prevData, val]);
+      dispatch({ 
+        type: RECORDING_ACTION.saving, 
+        target: STATE_DATA.motion, 
+        items: val 
+      });
     }
   };
 
@@ -129,21 +183,27 @@ const GyroscopeComponent: React.FC = () => {
   };
   
   const startRecording = () => {
-    setIsRecording(true);
-    setCurrentGyroscopeDataBlock([]);
-    setCurrentMotionDataBlock([]);
-    setTestMessage("number of samples " + currentGyroscopeDataBlock.length);
+    dispatch({ type: RECORDING_ACTION.start })
+    //setIsRecording(true);
+    //setCurrentGyroscopeDataBlock([]);
+    //setCurrentMotionDataBlock([]);
+    //setTestMessage("number of samples " + currentGyroscopeDataBlock.length);
+    setTestMessage("number of samples " + recordingState[STATE_DATA.gyro].length);
   };
 
   const stopRecording = () => {
-    setIsRecording(false);
-    setTestMessage("number of samples " + currentGyroscopeDataBlock.length);
+    //setIsRecording(false);
+    //setTestMessage("number of samples " + currentGyroscopeDataBlock.length);
+    dispatch({ type: RECORDING_ACTION.stop })
+
     const oneActivity: Activity = {
       label: activity,
-      gyroscope_data: [...currentGyroscopeDataBlock],
-      motion_data: [...currentMotionDataBlock],
+      gyroscope_data: [...recordingState[STATE_DATA.gyro]],
+      motion_data: [...recordingState[STATE_DATA.motion]],
     };
     saveGyroscopeData(oneActivity);
+    //setCurrentGyroscopeDataBlock([]);
+    //setCurrentMotionDataBlock([]);
   };
 
   const handleSendData = async () => {
@@ -227,7 +287,7 @@ const GyroscopeComponent: React.FC = () => {
             <p>Test: {testMessage}</p>
         </div>
         <div>
-            <button  onClick={isRecording ? stopRecording : startRecording}>{!isRecording ? "Start Recording" : "Stop Recording"}</button >
+            <button  onClick={recordingState.isRecording ? stopRecording : startRecording}>{!recordingState.isRecording ? "Start Recording" : "Stop Recording"}</button >
         </div>
     </div>
   );
