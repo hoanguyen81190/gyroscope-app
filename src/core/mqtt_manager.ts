@@ -1,6 +1,7 @@
 import { Client, ErrorWithInvocationContext, Message } from 'paho-mqtt';
 
 let client: Client | null = null;
+const namespace = 'org.ife.biolab'; // Change this to your namespace
 
 export type CallbackFunctionType = (message: string) => void;
 
@@ -36,7 +37,7 @@ export function connectToBroker(brokerHost: string, callback: CallbackFunctionTy
 export function publishData(topic: string, payload: string, callback: CallbackFunctionType): void {
   if (client) {
     const message = new Message(payload);
-    message.destinationName = topic;
+    message.destinationName = `${namespace}/${topic}`;
     client.send(message);
   } else {
     callback('Not connected to MQTT broker. Call connectToBroker() first.');

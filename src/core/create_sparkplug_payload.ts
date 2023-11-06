@@ -1,10 +1,9 @@
 // createSparkplugPayload.ts
 
-const namespace = 'org.ife.biolab'; // Change this to your namespace
 
 export const createGyroSparkplugPayload = (gyroData: any, label: string) => {
   const payload = {
-    topic: `${namespace}/gyroscope`,
+    //topic: `${namespace}/gyroscope`,
     payload: {
       time: new Date().toISOString(),
       quality: 192, // Good quality
@@ -35,7 +34,7 @@ export const createGyroSparkplugPayload = (gyroData: any, label: string) => {
 
 export const createMotionSparkplugPayload = (motionData: any, label: string) => {
     const payload = {
-      topic: `${namespace}/gyroscope`,
+      //topic: `${namespace}/gyroscope`,
       payload: {
         time: new Date().toISOString(),
         quality: 192, // Good quality
