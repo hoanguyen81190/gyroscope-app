@@ -1,110 +1,69 @@
 // src/GyroscopeComponent.tsx
 
-import React, { useEffect, useState, useReducer } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { GyroscopeSample, MotionSample, Activity } from '../core/indexedDb';
+//import { GyroscopeSample, MotionSample, Activity } from '../core/indexedDb';
 
-import IndexedDb from '../core/indexedDb';
+import { createGyroSparkplugPayload, createMotionSparkplugPayload } from '../core/create_sparkplug_payload'
 
-import axios from 'axios';
+//import IndexedDb from '../core/indexedDb';
+
+import { CallbackFunctionType, connectToBroker, publishData } from '../core/mqtt_manager';
 
 //These are the default activities, can expand later either via hardcode or interface
 const ACTIVITY_LIST = ["upstair", "downstair", "sitting", "walking"]
 
-const RECORDING_ACTION = {
+/* const RECORDING_ACTION = {
   start: 'startRecording',
   stop: 'stopRecording',
   saving: 'savingRecording'
-}
-
-const STATE_DATA = {
-  gyro: 'currentGyroscopeDataBlock',
-  motion: 'currentMotionDataBlock'
-}
-
-const initialRecordingState = {
-  isRecording: false,
-  currentGyroscopeDataBlock: [],
-  currentMotionDataBlock: []
-};
-
-function reducer(state: any, action: any) {
-  switch (action.type) {
-    case RECORDING_ACTION.start:
-      return {
-        ...state,
-        isRecording: true,
-        //currentGyroscopeDataBlock: [],
-        //currentMotionDataBlock: [],
-      };
-    case RECORDING_ACTION.stop:
-      return {
-        ...state,
-        isRecording: false,
-        currentGyroscopeDataBlock: [],
-        currentMotionDataBlock: [],
-      };
-    case RECORDING_ACTION.saving:
-      return {
-        ...state,
-        [action.target]: [...state[action.target], action.items]
-      }
-    default:
-      return state;
-  }
-}
+} */
 
 const GyroscopeComponent: React.FC = () => {
   //The label for the activity in recording, can be switch using a drop-down list
-  const [activity, setActivity] = React.useState(ACTIVITY_LIST[0]);
+  const [activity, setActivity] = useState(ACTIVITY_LIST[0]);
 
   //Store the current sample
-  const [recordingState, dispatch] = useReducer(reducer, initialRecordingState);
-  //const [currentGyroscopeDataBlock, setCurrentGyroscopeDataBlock] = React.useState<GyroscopeSample[]>([]);
-  //const [currentMotionDataBlock, setCurrentMotionDataBlock] = React.useState<MotionSample[]>([]);
-
-  //Flag to mark the recording
-  //const [isRecording, setIsRecording] = React.useState(false);
+  const [isRecording, setRecordingState] = useState(false);
 
   //Address of the central server to store all data, currently use REST_API, can be switched/expanded to MQTT later
-  const [serverAddress, setServerAddress] = React.useState("");
+  const [serverAddress, setServerAddress] = useState("v8517e16.ala.us-east-1.emqxsl.com");
 
   //For testing purpose only
-  const [testMessage, setTestMessage] = React.useState("");
+  const [testMessage, setTestMessage] = useState("");
 
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
 
   //For displaying the data on the screen
-  const [gyroscopeData, setGyroscopeData] = useState<GyroscopeSample>({
+  const [gyroscopeData, setGyroscopeData] = useState({
     timestamp: Date.now(),
-    yaw: 0,
-    pitch: 0,
-    roll: 0,
+    alpha: 0,
+    beta: 0,
+    gamma: 0,
   });
 
-  const [motionData, setMotionData] = useState<MotionSample>({
+  const [motionData, setMotionData] = useState({
     timestamp: Date.now(),
     x: 0,
     y: 0,
     z: 0,
   });
 
-  //Save the data temporarily in indexedDb of the browser
-  async function saveGyroscopeData(activity: Activity) {
-    const indexedDb = new IndexedDb();
-    await indexedDb.createObjectStore();
-    await indexedDb.putValue(activity);
-  }
+  const displayMessage: CallbackFunctionType = (message: string) => {
+    setTestMessage(message)
+  };
 
   //Webpage initiation
   useEffect(() => {
 
     //Database initiation
-    const runIndexDb = async () => {
+/*     const runIndexDb = async () => {
         const indexedDb = new IndexedDb();
         await indexedDb.createObjectStore();
     }
-    runIndexDb();
+    runIndexDb(); */
+
+    connectToBroker(`mqtt://${serverAddress}`, displayMessage)
 
     //Since iOS 12.2, Apple requires permission to access device orientation and motion data
     if (typeof DeviceOrientationEvent !== 'undefined') {
@@ -136,30 +95,24 @@ const GyroscopeComponent: React.FC = () => {
       window.removeEventListener('devicemotion', handleMotion);
 
     };
-  }, [recordingState.isRecording]);
+  }, [isRecording]);
 
   const handleOrientation = (event: DeviceOrientationEvent ) => {
-    const val: GyroscopeSample = {
+    const val = {
         timestamp: Date.now(),
-        yaw: event.alpha || 0,
-        pitch: event.beta || 0,
-        roll: event.gamma || 0,
+        alpha: event.alpha || 0,
+        beta: event.beta || 0,
+        gamma: event.gamma || 0,
     } 
     setGyroscopeData(val);
 
-    if (recordingState.isRecording) {
+    if (isRecording) {
       // Add the gyroscope data to the list
-      //setCurrentGyroscopeDataBlock(prevData => [...prevData, val]);
-      //dispatch({ type: 'addItems', 'currentGyroscopeDataBlock', val ]});
-      dispatch({ 
-        type: RECORDING_ACTION.saving, 
-        target: STATE_DATA.gyro, 
-        items: val 
-      });
+      publishData('gyroscope', createGyroSparkplugPayload(val, activity), displayMessage);
     }
   };
   const handleMotion = (event: DeviceMotionEvent) => {
-    const val: MotionSample = {
+    const val = {
         timestamp: Date.now(),
         x: event.acceleration?.x || 0,
         y: event.acceleration?.y || 0,
@@ -167,14 +120,9 @@ const GyroscopeComponent: React.FC = () => {
     } 
     setMotionData(val);
 
-    if (recordingState.isRecording) {
+    if (isRecording) {
       // Add the gyroscope data to the list
-      //setCurrentMotionDataBlock(prevData => [...prevData, val]);
-      dispatch({ 
-        type: RECORDING_ACTION.saving, 
-        target: STATE_DATA.motion, 
-        items: val 
-      });
+      publishData('motion', createMotionSparkplugPayload(val, activity), displayMessage);
     }
   };
 
@@ -182,54 +130,22 @@ const GyroscopeComponent: React.FC = () => {
     setActivity(e.target.value as string);
   };
   
-  const startRecording = () => {
-    dispatch({ type: RECORDING_ACTION.start })
-    //setIsRecording(true);
-    //setCurrentGyroscopeDataBlock([]);
-    //setCurrentMotionDataBlock([]);
-    //setTestMessage("number of samples " + currentGyroscopeDataBlock.length);
-    setTestMessage("number of samples " + recordingState[STATE_DATA.gyro].length);
+  const startStopRecording = () => {
+    setRecordingState(prev => !prev)
   };
 
-  const stopRecording = () => {
-    //setIsRecording(false);
-    setTestMessage("number of samples " + recordingState[STATE_DATA.gyro].length);
-    dispatch({ type: RECORDING_ACTION.stop })
-
-    const oneActivity: Activity = {
-      label: activity,
-      gyroscope_data: [...recordingState[STATE_DATA.gyro]],
-      motion_data: [...recordingState[STATE_DATA.motion]],
-    };
-    saveGyroscopeData(oneActivity);
-    //setCurrentGyroscopeDataBlock([]);
-    //setCurrentMotionDataBlock([]);
-  };
-
-  const handleSendData = async () => {
-    const indexedDb = new IndexedDb();
-    await indexedDb.createObjectStore();
-    const result = await indexedDb.getAllValue();
-    console.log('Get All Data', JSON.stringify(result));
-    //setTestMessage(result);
-    const api = serverAddress + "/api";
-    axios.post(api, result)
-      .then(response=> {
-        console.log('Response:', response.data.data);
-        setTestMessage(response.data.data);
-        
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      }); 
+  function connectToMqtt() {
+    if (serverAddress) {
+      connectToBroker(`mqtt://${serverAddress}`, displayMessage)
+    }
   }
 
-  const handleClearData = async () => {
+/*   const handleClearData = async () => {
     const indexedDb = new IndexedDb();
     await indexedDb.createObjectStore();
     await indexedDb.deleteAllValue();
     console.log("DONE")
-  }
+  } */
 
   const requestOrientationAccess = () => {
     if (typeof DeviceOrientationEvent !== 'undefined') {
@@ -256,11 +172,11 @@ const GyroscopeComponent: React.FC = () => {
                     value={serverAddress}
                     onChange={(e) => setServerAddress(e.target.value)}
                 />
-                <button  onClick={handleSendData}> Save </button >
+                <button  onClick={connectToMqtt}> Connect to MQTT </button >
             </div>
-            <div>
+            {/*<div>
                 Clear Data: <button  onClick={handleClearData}> Clear </button >
-            </div>
+  </div>*/}
             
         </div>
         {/* ----------------------------------MAIN--------------------------------- */}
@@ -276,9 +192,9 @@ const GyroscopeComponent: React.FC = () => {
         </div>
         <div>
             <h2>Gyroscope Data:</h2>
-            <p>Yaw: {gyroscopeData.yaw}</p>
-            <p>Pitch: {gyroscopeData.pitch}</p>
-            <p>Roll: {gyroscopeData.roll}</p>
+            <p>Yaw: {gyroscopeData.alpha}</p>
+            <p>Pitch: {gyroscopeData.beta}</p>
+            <p>Roll: {gyroscopeData.gamma}</p>
 
             <h2>Accelerometer Data:</h2>
             <p>X: {motionData.x}</p>
@@ -287,7 +203,7 @@ const GyroscopeComponent: React.FC = () => {
             <p>Test: {testMessage}</p>
         </div>
         <div>
-            <button  onClick={recordingState.isRecording ? stopRecording : startRecording}>{!recordingState.isRecording ? "Start Recording" : "Stop Recording"}</button >
+            <button  onClick={startStopRecording}>{!isRecording ? "Start Recording" : "Stop Recording"}</button >
         </div>
     </div>
   );

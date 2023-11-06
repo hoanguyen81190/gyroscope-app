@@ -1,0 +1,66 @@
+// createSparkplugPayload.ts
+
+const namespace = 'org.ife.biolab'; // Change this to your namespace
+
+export const createGyroSparkplugPayload = (gyroData: any, label: string) => {
+  const payload = {
+    topic: `${namespace}/gyroscope`,
+    payload: {
+      time: new Date().toISOString(),
+      quality: 192, // Good quality
+      name: 'Gyroscope',
+      label, // Add the label here
+      metrics: [
+        {
+          metric: 'alpha',
+          type: 'Float',
+          value: gyroData.alpha,
+        },
+        {
+          metric: 'beta',
+          type: 'Float',
+          value: gyroData.beta,
+        },
+        {
+          metric: 'gamma',
+          type: 'Float',
+          value: gyroData.gamma,
+        },
+      ],
+    },
+  };
+
+  return JSON.stringify(payload);
+};
+
+export const createMotionSparkplugPayload = (motionData: any, label: string) => {
+    const payload = {
+      topic: `${namespace}/gyroscope`,
+      payload: {
+        time: new Date().toISOString(),
+        quality: 192, // Good quality
+        name: 'Gyroscope',
+        label, // Add the label here
+        metrics: [
+          {
+            metric: 'x',
+            type: 'Float',
+            value: motionData.x,
+          },
+          {
+            metric: 'y',
+            type: 'Float',
+            value: motionData.y,
+          },
+          {
+            metric: 'z',
+            type: 'Float',
+            value: motionData.z,
+          },
+        ],
+      },
+    };
+  
+    return JSON.stringify(payload);
+  };
+  

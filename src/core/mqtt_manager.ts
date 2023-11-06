@@ -1,28 +1,33 @@
-import mqtt, { MqttClient } from 'mqtt';
+import mqtt from 'mqtt';
 
-const connectToMQTTBroker = (): MqttClient => {
-  // Create a client instance
-  const client = mqtt.connect('mqtts://broker.example.com', {
-    port: 8883, // Specify the SSL/TLS port (usually 8883 for MQTT over SSL/TLS)
-    //protocolId: 'MQIsdp',
-    //protocolVersion: 3,
-    rejectUnauthorized: false, // Set to true if your certificate isn't self-signed
-    clientId: 'gyroscope-data-app',
-    username: 'ife',
-    password: 'ife',
-  });
+let client: mqtt.MqttClient;
 
-  // Set up event handlers
+export type CallbackFunctionType = (message: string) => void;
+
+const options = {
+    port: 8883, // TLS/SSL port
+    username: 'ife', // Replace with your MQTT username
+    password: 'ife', // Replace with your MQTT password
+    rejectUnauthorized: false // Set to true if you want to verify the server's certificate
+  };
+
+export function connectToBroker(brokerHost: string, callback: CallbackFunctionType): void {
+  client = mqtt.connect(brokerHost, options);
+
   client.on('connect', () => {
-    console.log('Connected to MQTT broker');
-    // Subscribe to topics or perform any other actions here
+    callback('Connected to MQTT broker');
   });
 
-  client.on('message', (topic, message) => {
-    console.log(`Received message on topic ${topic}: ${message.toString()}`);
+  client.on('error', (err) => {
+    console.log(err)
+    callback('Error connecting to MQTT broker:');
   });
+}
 
-  return client;
-};
-
-export default connectToMQTTBroker;
+export function publishData(topic: string, message: string, callback: CallbackFunctionType): void {
+  if (client) {
+    client.publish(topic, message);
+  } else {
+    callback('Not connected to MQTT broker. Call connectToBroker() first.');
+  }
+}
