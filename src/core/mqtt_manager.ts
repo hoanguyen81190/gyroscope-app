@@ -39,6 +39,7 @@ export function publishData(topic: string, payload: string, callback: CallbackFu
     const message = new Message(payload);
     message.destinationName = `${namespace}/${topic}`;
     client.send(message);
+    callback(`${namespace}/${topic}`);
   } else {
     callback('Not connected to MQTT broker. Call connectToBroker() first.');
   }
