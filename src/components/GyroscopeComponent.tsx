@@ -50,6 +50,7 @@ const GyroscopeComponent: React.FC = () => {
   });
 
   const displayMessage: CallbackFunctionType = (message: string) => {
+    console.log("message ", message)
     setTestMessage(message)
   };
 
@@ -63,7 +64,7 @@ const GyroscopeComponent: React.FC = () => {
     }
     runIndexDb(); */
 
-    connectToBroker(`mqtt://${serverAddress}`, displayMessage)
+    connectToBroker(serverAddress, displayMessage)
 
     //Since iOS 12.2, Apple requires permission to access device orientation and motion data
     if (typeof DeviceOrientationEvent !== 'undefined') {
@@ -136,7 +137,7 @@ const GyroscopeComponent: React.FC = () => {
 
   function connectToMqtt() {
     if (serverAddress) {
-      connectToBroker(`mqtt://${serverAddress}`, displayMessage)
+      connectToBroker(serverAddress, displayMessage)
     }
   }
 

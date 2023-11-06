@@ -10,10 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/paho-mqtt": "^1.0.9",
     "autoprefixer": "^10.4.16",
     "axios": "^1.5.1",
+    "browserify": "^17.0.0",
     "idb": "^7.1.1",
-    "mqtt": "^5.1.4",
+    "paho-mqtt": "^1.1.0",
     "postcss": "^8.4.31",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
