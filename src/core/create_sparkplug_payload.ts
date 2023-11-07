@@ -6,8 +6,8 @@ export const createGyroSparkplugPayload = (gyroData: any, label: string) => {
     //topic: `${namespace}/gyroscope`,
     payload: {
       time: new Date().toISOString(),
-      quality: 192, // Good quality
-      name: 'Gyroscope',
+      //quality: 192, // Good quality
+      name: 'gyroscope',
       label, // Add the label here
       metrics: [
         {
@@ -37,8 +37,8 @@ export const createMotionSparkplugPayload = (motionData: any, label: string) => 
       //topic: `${namespace}/gyroscope`,
       payload: {
         time: new Date().toISOString(),
-        quality: 192, // Good quality
-        name: 'Gyroscope',
+        //quality: 192, // Good quality
+        name: 'motion',
         label, // Add the label here
         metrics: [
           {

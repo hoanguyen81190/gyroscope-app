@@ -64,7 +64,7 @@ const GyroscopeComponent: React.FC = () => {
     }
     runIndexDb(); */
 
-    connectToBroker(serverAddress, displayMessage)
+    connectToBroker(serverAddress, displayMessage, false)
 
     //Since iOS 12.2, Apple requires permission to access device orientation and motion data
     if (typeof DeviceOrientationEvent !== 'undefined') {
@@ -137,7 +137,7 @@ const GyroscopeComponent: React.FC = () => {
 
   function connectToMqtt() {
     if (serverAddress) {
-      connectToBroker(serverAddress, displayMessage)
+      connectToBroker(serverAddress, displayMessage, true)
     }
   }
 
