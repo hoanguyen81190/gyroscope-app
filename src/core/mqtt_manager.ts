@@ -38,7 +38,7 @@ export function connectToBroker(brokerHost: string, callback: CallbackFunctionTy
 
 }
 
-export function publishData(topic: string, payload: string, callback: CallbackFunctionType): void {
+export function publishData(topic: string, payload: any, callback: CallbackFunctionType): void {
   if (client) {
     const message = new Message(JSON.stringify({
       clientid: CLIENTID, 
