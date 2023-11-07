@@ -2,6 +2,7 @@ import { Client, ErrorWithInvocationContext, Message } from 'paho-mqtt';
 
 let client: Client | null = null;
 const namespace = 'org.ife.biolab'; // Change this to your namespace
+const CLIENTID = generateRandomString(10); // Generate a 10-character random string
 
 export type CallbackFunctionType = (message: string) => void;
 
@@ -39,11 +40,26 @@ export function connectToBroker(brokerHost: string, callback: CallbackFunctionTy
 
 export function publishData(topic: string, payload: string, callback: CallbackFunctionType): void {
   if (client) {
-    const message = new Message(payload);
+    const message = new Message(JSON.stringify({
+      clientid: CLIENTID, 
+      payload: payload
+    }));
     message.destinationName = `${namespace}/${topic}`;
     client.send(message);
     callback(`${namespace}/${topic}`);
   } else {
     callback('Not connected to MQTT broker. Call connectToBroker() first.');
   }
+}
+
+function generateRandomString(length: number): string {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    result += characters[randomIndex];
+  }
+
+  return result;
 }

@@ -1,10 +1,7 @@
 // createSparkplugPayload.ts
 
-
 export const createGyroSparkplugPayload = (gyroData: any, label: string) => {
   const payload = {
-    //topic: `${namespace}/gyroscope`,
-    payload: {
       time: new Date().toISOString(),
       //quality: 192, // Good quality
       name: 'gyroscope',
@@ -26,16 +23,13 @@ export const createGyroSparkplugPayload = (gyroData: any, label: string) => {
           value: gyroData.gamma,
         },
       ],
-    },
   };
 
-  return JSON.stringify(payload);
+  return payload;
 };
 
 export const createMotionSparkplugPayload = (motionData: any, label: string) => {
     const payload = {
-      //topic: `${namespace}/gyroscope`,
-      payload: {
         time: new Date().toISOString(),
         //quality: 192, // Good quality
         name: 'motion',
@@ -57,9 +51,8 @@ export const createMotionSparkplugPayload = (motionData: any, label: string) => 
             value: motionData.z,
           },
         ],
-      },
     };
   
-    return JSON.stringify(payload);
+    return payload;
   };
   
