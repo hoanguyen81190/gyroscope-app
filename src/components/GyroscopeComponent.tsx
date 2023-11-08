@@ -144,7 +144,7 @@ const GyroscopeComponent: React.FC = () => {
   }
 
   function mqttMessageCallback(message: any) {
-    setPredictedActivity(message)
+    setPredictedActivity(JSON.stringify(message))
   }
 
 /*   const handleClearData = async () => {
