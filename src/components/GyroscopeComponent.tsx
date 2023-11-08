@@ -111,7 +111,7 @@ const GyroscopeComponent: React.FC = () => {
 
     if (isRecording) {
       // Add the gyroscope data to the list
-      publishData('gyroscope', createGyroSparkplugPayload(val, activity), displayMessage);
+      publishData('gyroscope', createGyroSparkplugPayload(val, activity));
     }
   };
   const handleMotion = (event: DeviceMotionEvent) => {
@@ -125,7 +125,7 @@ const GyroscopeComponent: React.FC = () => {
 
     if (isRecording) {
       // Add the gyroscope data to the list
-      publishData('motion', createMotionSparkplugPayload(val, activity), displayMessage);
+      publishData('motion', createMotionSparkplugPayload(val, activity));
     }
   };
 

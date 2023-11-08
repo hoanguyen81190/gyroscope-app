@@ -45,7 +45,7 @@ export function connectToBroker(brokerHost: string, callback: CallbackFunctionTy
 
 }
 
-export function publishData(topic: string, payload: any, callback: CallbackFunctionType): void {
+export function publishData(topic: string, payload: any): void {
   if (client) {
     const message = new Message(JSON.stringify({
       clientid: CLIENTID, 
@@ -53,10 +53,7 @@ export function publishData(topic: string, payload: any, callback: CallbackFunct
     }));
     message.destinationName = `${namespace}/${topic}`;
     client.send(message);
-    callback(`${namespace}/${topic}`);
-  } else {
-    callback('Not connected to MQTT broker. Call connectToBroker() first.');
-  }
+  } 
 }
 
 function generateRandomString(length: number): string {
