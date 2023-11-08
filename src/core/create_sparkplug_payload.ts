@@ -3,9 +3,8 @@
 export const createGyroSparkplugPayload = (gyroData: any, label: string) => {
   const payload = {
       time: new Date().toISOString(),
-      //quality: 192, // Good quality
       name: 'gyroscope',
-      label, // Add the label here
+      label, //activity
       metrics: [
         {
           metric: 'alpha',
@@ -31,9 +30,8 @@ export const createGyroSparkplugPayload = (gyroData: any, label: string) => {
 export const createMotionSparkplugPayload = (motionData: any, label: string) => {
     const payload = {
         time: new Date().toISOString(),
-        //quality: 192, // Good quality
         name: 'motion',
-        label, // Add the label here
+        label, 
         metrics: [
           {
             metric: 'x',

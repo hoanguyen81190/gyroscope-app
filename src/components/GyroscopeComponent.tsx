@@ -32,6 +32,8 @@ const GyroscopeComponent: React.FC = () => {
   //For testing purpose only
   const [testMessage, setTestMessage] = useState("");
 
+  const [predictedActivity, setPredictedActivity] = useState("");
+
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
 
   //For displaying the data on the screen
@@ -64,7 +66,7 @@ const GyroscopeComponent: React.FC = () => {
     }
     runIndexDb(); */
 
-    connectToBroker(serverAddress, displayMessage, false)
+    connectToBroker(serverAddress, displayMessage, mqttMessageCallback, false)
 
     //Since iOS 12.2, Apple requires permission to access device orientation and motion data
     if (typeof DeviceOrientationEvent !== 'undefined') {
@@ -137,8 +139,12 @@ const GyroscopeComponent: React.FC = () => {
 
   function connectToMqtt() {
     if (serverAddress) {
-      connectToBroker(serverAddress, displayMessage, true)
+      connectToBroker(serverAddress, displayMessage, mqttMessageCallback, true)
     }
+  }
+
+  function mqttMessageCallback(message: any) {
+    setPredictedActivity(message)
   }
 
 /*   const handleClearData = async () => {
@@ -175,6 +181,7 @@ const GyroscopeComponent: React.FC = () => {
                 />
                 <button  onClick={connectToMqtt}> Connect to MQTT </button >
             </div>
+            <p>Test: {testMessage}</p>
             {/*<div>
                 Clear Data: <button  onClick={handleClearData}> Clear </button >
   </div>*/}
@@ -201,7 +208,7 @@ const GyroscopeComponent: React.FC = () => {
             <p>X: {motionData.x}</p>
             <p>Y: {motionData.y}</p>
             <p>Z: {motionData.z}</p>
-            <p>Test: {testMessage}</p>
+            <p>Activity: {predictedActivity}</p>
         </div>
         <div>
             <button  onClick={startStopRecording}>{!isRecording ? "Start Recording" : "Stop Recording"}</button >

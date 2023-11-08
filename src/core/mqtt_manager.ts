@@ -13,7 +13,7 @@ const options = {
     rejectUnauthorized: false // Set to true if you want to verify the server's certificate
   };
 
-export function connectToBroker(brokerHost: string, callback: CallbackFunctionType, reconnect: boolean): void {
+export function connectToBroker(brokerHost: string, callback: CallbackFunctionType, messageCallback:  any, reconnect: boolean): void {
   //const server = 'wss://v8517e16.ala.us-east-1.emqxsl.com:8883'
   if (!client || reconnect) {
     client = new Client(brokerHost, options.port, "test")
@@ -23,16 +23,23 @@ export function connectToBroker(brokerHost: string, callback: CallbackFunctionTy
       userName: options.username,
       password: options.password,
       useSSL: true,
-      onSuccess: () => {callback('Connected to MQTT broker');}, 
-      onFailure: onFailure})
+      onSuccess: onConnect, 
+      onFailure: onFailure
+    })
+
+    client.onMessageArrived = onMessageArrived;
   
-  /*   function onConnect() {
+    function onConnect() {
       // Once a connection has been made, make a subscription and send a message.
-      
-      //client.subscribe("World");
-    } */
+      callback('Connected to MQTT broker');
+      client?.subscribe("result_topic");
+    }
     function onFailure(message: ErrorWithInvocationContext) {
       console.error('Failed to connect to MQTT broker', message.errorMessage);
+    }
+
+    function onMessageArrived (message: Message) {
+      messageCallback(message)
     }
   }
 
