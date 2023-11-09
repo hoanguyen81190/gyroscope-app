@@ -135,6 +135,7 @@ const GyroscopeComponent: React.FC = () => {
   
   const startStopRecording = () => {
     setRecordingState(prev => !prev)
+    setPredictedActivity("")
   };
 
   function connectToMqtt() {
@@ -181,7 +182,7 @@ const GyroscopeComponent: React.FC = () => {
                 />
                 <button  onClick={connectToMqtt}> Connect to MQTT </button >
             </div>
-            <p>Test: {testMessage}</p>
+            <p>MQTT Status: {testMessage}</p>
             {/*<div>
                 Clear Data: <button  onClick={handleClearData}> Clear </button >
   </div>*/}
@@ -208,7 +209,7 @@ const GyroscopeComponent: React.FC = () => {
             <p>X: {motionData.x}</p>
             <p>Y: {motionData.y}</p>
             <p>Z: {motionData.z}</p>
-            <p>Activity: {predictedActivity}</p>
+            <p>Predicted Activity: {predictedActivity}</p>
         </div>
         <div>
             <button  onClick={startStopRecording}>{!isRecording ? "Start Recording" : "Stop Recording"}</button >
