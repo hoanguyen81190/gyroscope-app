@@ -107,7 +107,7 @@ const GyroscopeComponent: React.FC = () => {
     runIndexDb(); */
     const initSession = async () => {
       const newSession = new onnx.InferenceSession();
-      await newSession.loadModel('../../model.onnx');
+      await newSession.loadModel('./model.onnx');
       setOnnxSession(newSession);
     };
 
