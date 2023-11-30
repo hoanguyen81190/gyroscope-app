@@ -2,9 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 
+import * as onnx from 'onnxjs';
+
 //import { GyroscopeSample, MotionSample, Activity } from '../core/indexedDb';
 
-import { createGyroSparkplugPayload, createMotionSparkplugPayload } from '../core/create_sparkplug_payload'
+import { createGyroSparkplugPayload, GyroscopeData } from '../core/create_sparkplug_payload'
 
 //import IndexedDb from '../core/indexedDb';
 
@@ -18,6 +20,13 @@ const ACTIVITY_LIST = ["upstair", "downstair", "sitting", "walking"]
   stop: 'stopRecording',
   saving: 'savingRecording'
 } */
+const TORCH_MODEL = {
+  directory: 'models',
+  model: 'model.pth',
+  window_size: 128,
+  sensor: 'gyroscope',
+  labels: ['sitting', 'walking', 'upstair', 'downstair']
+}
 
 const GyroscopeComponent: React.FC = () => {
   //The label for the activity in recording, can be switch using a drop-down list
@@ -36,8 +45,17 @@ const GyroscopeComponent: React.FC = () => {
 
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
 
+  const [onnxSession, setOnnxSession] = useState<onnx.InferenceSession | null>(null);
+
+  const [gyroscopeData, setGyroscopeData] = useState<GyroscopeData[]>([{
+    //timestamp: Date.now(),
+    alpha:  0,
+    beta:  0,
+    gamma:  0,
+} ]);
+
   //For displaying the data on the screen
-  const [gyroscopeData, setGyroscopeData] = useState({
+/*   const [gyroscopeData, setGyroscopeData] = useState({
     timestamp: Date.now(),
     alpha: 0,
     beta: 0,
@@ -49,11 +67,33 @@ const GyroscopeComponent: React.FC = () => {
     x: 0,
     y: 0,
     z: 0,
-  });
+  }); */
 
   const displayMessage: CallbackFunctionType = (message: string) => {
     console.log("message ", message)
     setTestMessage(message)
+  };
+
+  const preprocessGyroscopeData = (data: GyroscopeData[]): Float32Array => {
+    // Implement your preprocessing logic here
+    // Example: Flatten the array of objects into a Float32Array
+    return new Float32Array(data.flatMap(d => [d.alpha, d.beta, d.gamma]));
+  };
+  
+  const runModel = async (inputTensor: onnx.Tensor) => {
+    if (onnxSession != null) {
+      const outputMap = await onnxSession.run([inputTensor]);
+      const outputTensor = outputMap.values().next().value as onnx.Tensor;
+      // Handle the output
+      const outputArray = Array.from(outputTensor.data as unknown as number[]);
+      const predictedIndex = outputArray.indexOf(Math.max(...outputArray));
+  
+      const predictedLabel = ACTIVITY_LIST[predictedIndex];
+      setPredictedActivity(predictedLabel)
+    }
+    else {
+      setPredictedActivity("no model found")
+    }
   };
 
   //Webpage initiation
@@ -65,7 +105,34 @@ const GyroscopeComponent: React.FC = () => {
         await indexedDb.createObjectStore();
     }
     runIndexDb(); */
+    const initSession = async () => {
+      const newSession = new onnx.InferenceSession();
+      await newSession.loadModel('../../model.onnx');
+      setOnnxSession(newSession);
+    };
 
+    initSession().catch(console.error);
+
+    const interval = setInterval(() => {
+      if (gyroscopeData.length === TORCH_MODEL.window_size) {
+        // Preprocess the data
+        const processedData: Float32Array = preprocessGyroscopeData(gyroscopeData);
+
+        const tensorShape: number[] = [1, TORCH_MODEL.window_size, 3]
+  
+        // Create an input tensor
+        const inputTensor = new onnx.Tensor(processedData, 'float32', tensorShape);
+  
+        // Run the model
+        runModel(inputTensor);
+
+        if (isRecording) {
+          // Add the gyroscope data to the list
+          publishData('gyroscope', createGyroSparkplugPayload(gyroscopeData, activity));
+        }
+      }
+    }, 1000); // 1000 milliseconds = 1 second
+    
     connectToBroker(serverAddress, displayMessage, mqttMessageCallback, false)
 
     //Since iOS 12.2, Apple requires permission to access device orientation and motion data
@@ -77,14 +144,14 @@ const GyroscopeComponent: React.FC = () => {
             if (permissionState === 'granted') {
               setIsPermissionGranted(true);
               window.addEventListener('deviceorientation', handleOrientation);
-              window.addEventListener('devicemotion', handleMotion);
+              //window.addEventListener('devicemotion', handleMotion);
             }
           })
           .catch(console.error);
       } else {
         setIsPermissionGranted(true);
         window.addEventListener('deviceorientation', handleOrientation);
-        window.addEventListener('devicemotion', handleMotion);
+        //window.addEventListener('devicemotion', handleMotion);
       }
       
     }
@@ -95,26 +162,22 @@ const GyroscopeComponent: React.FC = () => {
 
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
-      window.removeEventListener('devicemotion', handleMotion);
+      clearInterval(interval);
+      //window.removeEventListener('devicemotion', handleMotion);
 
     };
   }, [isRecording, predictedActivity]);
 
   const handleOrientation = (event: DeviceOrientationEvent ) => {
-    const val = {
-        timestamp: Date.now(),
+    const val : GyroscopeData  = {
+        //timestamp: Date.now(),
         alpha: event.alpha || 0,
         beta: event.beta || 0,
         gamma: event.gamma || 0,
     } 
-    setGyroscopeData(val);
-
-    if (isRecording) {
-      // Add the gyroscope data to the list
-      publishData('gyroscope', createGyroSparkplugPayload(val, activity));
-    }
+    setGyroscopeData((currentData) => [...currentData, val].slice(-TORCH_MODEL.window_size));
   };
-  const handleMotion = (event: DeviceMotionEvent) => {
+/*   const handleMotion = (event: DeviceMotionEvent) => {
     const val = {
         timestamp: Date.now(),
         x: event.acceleration?.x || 0,
@@ -127,7 +190,7 @@ const GyroscopeComponent: React.FC = () => {
       // Add the gyroscope data to the list
       publishData('motion', createMotionSparkplugPayload(val, activity));
     }
-  };
+  }; */
 
   const handleActivityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setActivity(e.target.value as string);
@@ -203,14 +266,10 @@ const GyroscopeComponent: React.FC = () => {
         </div>
         <div>
             <h2>Gyroscope Data:</h2>
-            <p>Yaw: {gyroscopeData.alpha}</p>
-            <p>Pitch: {gyroscopeData.beta}</p>
-            <p>Roll: {gyroscopeData.gamma}</p>
+            <p>Yaw: {gyroscopeData[gyroscopeData.length - 1].alpha}</p>
+            <p>Pitch: {gyroscopeData[gyroscopeData.length - 1].beta}</p>
+            <p>Roll: {gyroscopeData[gyroscopeData.length - 1].gamma}</p>
 
-            <h2>Accelerometer Data:</h2>
-            <p>X: {motionData.x}</p>
-            <p>Y: {motionData.y}</p>
-            <p>Z: {motionData.z}</p>
             <p>Predicted Activity: {predictedActivity}</p>
         </div>
         <div>
