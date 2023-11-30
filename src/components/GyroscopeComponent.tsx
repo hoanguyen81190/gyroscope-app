@@ -77,7 +77,7 @@ const GyroscopeComponent: React.FC = () => {
   const preprocessGyroscopeData = (data: GyroscopeData[]): Float32Array => {
     // Implement your preprocessing logic here
     // Example: Flatten the array of objects into a Float32Array
-    return new Float32Array(data.flatMap(d => [d.alpha, d.beta, d.gamma]));
+    return new Float32Array(new Float32Array(data.flatMap(d => [d.alpha, d.beta, d.gamma])));
   };
   
   const runModel = async (inputTensor: onnx.Tensor) => {
