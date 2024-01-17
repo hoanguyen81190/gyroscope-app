@@ -145,7 +145,7 @@ const GyroscopeComponent: React.FC = () => {
   }
 
   function mqttMessageCallback(message: any) {
-    if (JSON.stringify(message.payloadString) !== predictedActivity) {
+    if (isRecording && JSON.stringify(message.payloadString) !== predictedActivity) {
       setPredictedActivity(JSON.stringify(message.payloadString))
     }
   }
