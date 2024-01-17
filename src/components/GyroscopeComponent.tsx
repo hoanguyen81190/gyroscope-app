@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 
-import * as onnx from 'onnxjs';
+import * as ort from "onnxruntime-web";
 
 //import { GyroscopeSample, MotionSample, Activity } from '../core/indexedDb';
 
@@ -23,10 +23,12 @@ const ACTIVITY_LIST = ["upstair", "downstair", "sitting", "walking"]
 const TORCH_MODEL = {
   directory: 'models',
   model: 'model.pth',
-  window_size: 128,
+  window_size: 180,
   sensor: 'gyroscope',
   labels: ['sitting', 'walking', 'upstair', 'downstair']
 }
+
+const TESTING = true
 
 const GyroscopeComponent: React.FC = () => {
   //The label for the activity in recording, can be switch using a drop-down list
@@ -45,7 +47,7 @@ const GyroscopeComponent: React.FC = () => {
 
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
 
-  const [onnxSession, setOnnxSession] = useState<onnx.InferenceSession | null>(null);
+  const [onnxSession, setOnnxSession] = useState<ort.InferenceSession | null>(null);
 
   const [gyroscopeData, setGyroscopeData] = useState<GyroscopeData[]>([{
     //timestamp: Date.now(),
@@ -80,10 +82,11 @@ const GyroscopeComponent: React.FC = () => {
     return new Float32Array(new Float32Array(data.flatMap(d => [d.alpha, d.beta, d.gamma])));
   };
   
-  const runModel = async (inputTensor: onnx.Tensor) => {
+  const runModel = async (inputTensor: ort.Tensor) => {
     if (onnxSession != null) {
-      const outputMap = await onnxSession.run([inputTensor]);
-      const outputTensor = outputMap.values().next().value as onnx.Tensor;
+      const feeds = { inputName: inputTensor}
+      const results = await onnxSession.run(feeds);
+      const outputTensor = results.outputName;
       // Handle the output
       const outputArray = Array.from(outputTensor.data as unknown as number[]);
       const predictedIndex = outputArray.indexOf(Math.max(...outputArray));
@@ -106,23 +109,31 @@ const GyroscopeComponent: React.FC = () => {
     }
     runIndexDb(); */
     const initSession = async () => {
-      const newSession = new onnx.InferenceSession();
-      await newSession.loadModel('./model.onnx');
+      console.log("loading")
+      const newSession = await ort .InferenceSession.create(
+        "./super_resolution.onnx",
+        {
+          executionProviders: ["webgl"],
+        }
+      )
+      //await newSession.loadModel('/model.onnx');
       setOnnxSession(newSession);
     };
 
     initSession().catch(console.error);
-
+    console.log("done loading")
     const interval = setInterval(() => {
+      //console.log("hello ", onnxSession)
+      //console.log("hello", gyroscopeData.length)
       if (gyroscopeData.length === TORCH_MODEL.window_size) {
         // Preprocess the data
         const processedData: Float32Array = preprocessGyroscopeData(gyroscopeData);
 
         const tensorShape: number[] = [1, TORCH_MODEL.window_size, 3]
-  
+        
         // Create an input tensor
-        const inputTensor = new onnx.Tensor(processedData, 'float32', tensorShape);
-  
+        const inputTensor = new ort.Tensor('float32', processedData, tensorShape);
+        
         // Run the model
         runModel(inputTensor);
 
@@ -131,7 +142,17 @@ const GyroscopeComponent: React.FC = () => {
           publishData('gyroscope', createGyroSparkplugPayload(gyroscopeData, activity));
         }
       }
-    }, 1000); // 1000 milliseconds = 1 second
+
+      if (TESTING) {
+        const val : GyroscopeData  = {
+          //timestamp: Date.now(),
+          alpha:  0,
+          beta:  0,
+          gamma:  0,
+      } 
+      setGyroscopeData((currentData) => [...currentData, val].slice(-TORCH_MODEL.window_size));
+      }
+    }, 100); // 1000 milliseconds = 1 second
     
     connectToBroker(serverAddress, displayMessage, mqttMessageCallback, false)
 
