@@ -117,9 +117,9 @@ const GyroscopeComponent: React.FC = () => {
   const handleMotion = (event: DeviceMotionEvent) => {
     const val = {
         timestamp: Date.now(),
-        x: event.acceleration?.x || 0,
-        y: event.acceleration?.y || 0,
-        z: event.acceleration?.z || 0,
+        x: event.accelerationIncludingGravity?.x || 0,
+        y: event.accelerationIncludingGravity?.y || 0,
+        z: event.accelerationIncludingGravity?.z || 0,
     } 
     setMotionData(val);
 
